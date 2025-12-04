@@ -1,0 +1,377 @@
+import React, { useState, useEffect } from 'react';
+import { Clock, Users, User, BookOpen, Lightbulb, ChevronRight, Play, Pause, RotateCcw, CheckCircle, HelpCircle, Heart, Table, X } from 'lucide-react';
+
+const LessonPlanApp = () => {
+  const [activeTab, setActiveTab] = useState('intro');
+  const [timeLeft, setTimeLeft] = useState(300); // Default 5 mins in seconds
+  const [isActive, setIsActive] = useState(false);
+  const [initialTime, setInitialTime] = useState(300);
+  const [showEk212, setShowEk212] = useState(false); // State for Ek 2.1.2 modal
+
+  // Timer logic
+  useEffect(() => {
+    let interval = null;
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((timeLeft) => timeLeft - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, timeLeft]);
+
+  const toggleTimer = () => setIsActive(!isActive);
+  const resetTimer = () => {
+    setIsActive(false);
+    setTimeLeft(initialTime);
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const changeTab = (tab, time) => {
+    setActiveTab(tab);
+    setInitialTime(time);
+    setTimeLeft(time);
+    setIsActive(false);
+    setShowEk212(false); // Close modal on tab change
+  };
+
+  const valuesList = [
+    { name: "Dürüstlük", color: "bg-red-100 text-red-700 border-red-300" },
+    { name: "Nezaket", color: "bg-blue-100 text-blue-700 border-blue-300" },
+    { name: "Cesaret", color: "bg-orange-100 text-orange-700 border-orange-300" },
+    { name: "Sorumluluk", color: "bg-green-100 text-green-700 border-green-300" },
+    { name: "Öz Disiplin", color: "bg-teal-100 text-teal-700 border-teal-300" },
+    { name: "Hizmet", color: "bg-indigo-100 text-indigo-700 border-indigo-300" },
+    { name: "Saygı", color: "bg-pink-100 text-pink-700 border-pink-300" }
+  ];
+
+  // Data from Ek 2.1.2
+  const ek212Data = [
+    { value: "Dürüstlük", desc: "Doğru, güvenilir ve adil olmak." },
+    { value: "Kendine/Diğerlerine Saygı", desc: "Kendinin ve diğerlerinin ihtiyaçlarına, inançlarına ve duygularına duyarlı olmak." },
+    { value: "Nezaket", desc: "Başkalarına karşı ilgili ve nazik olmak." },
+    { value: "Cesaret", desc: "Cesaretlendirmek, inanç ve idealleri için ayağa kalkmak." },
+    { value: "Hizmet", desc: "Başkalarına yardım ve hizmet etmek." }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-800">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-indigo-700 flex items-center gap-2">
+              <Heart className="w-6 h-6 text-red-500 fill-current" />
+              Değerlerle Karar Verme
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">Sınıf İçi Etkileşimli Ders Planı (40 Dakika)</p>
+          </div>
+          
+          <div className="flex items-center gap-4 bg-gray-100 p-2 rounded-lg border border-gray-200">
+            <div className="text-center px-2">
+              <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Kalan Süre</span>
+              <div className={`text-2xl font-mono font-bold ${timeLeft < 60 ? 'text-red-600 animate-pulse' : 'text-slate-700'}`}>
+                {formatTime(timeLeft)}
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <button onClick={toggleTimer} className="p-2 bg-white rounded-md shadow hover:bg-indigo-50 text-indigo-600 transition-colors">
+                {isActive ? <Pause size={20} /> : <Play size={20} />}
+              </button>
+              <button onClick={resetTimer} className="p-2 bg-white rounded-md shadow hover:bg-red-50 text-red-500 transition-colors">
+                <RotateCcw size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        {/* Sidebar Navigation */}
+        <nav className="lg:col-span-1 space-y-2">
+          <MenuButton 
+            active={activeTab === 'intro'} 
+            onClick={() => changeTab('intro', 300)} 
+            icon={<Lightbulb size={18} />}
+            title="1. Giriş & Isınma"
+            time="5 Dk"
+          />
+          <MenuButton 
+            active={activeTab === 'individual'} 
+            onClick={() => changeTab('individual', 600)} 
+            icon={<User size={18} />}
+            title="2. Bireysel Keşif"
+            time="10 Dk"
+          />
+          <MenuButton 
+            active={activeTab === 'group'} 
+            onClick={() => changeTab('group', 1200)} 
+            icon={<Users size={18} />}
+            title="3. Grup Senaryosu"
+            time="20 Dk"
+          />
+          <MenuButton 
+            active={activeTab === 'wrapup'} 
+            onClick={() => changeTab('wrapup', 300)} 
+            icon={<CheckCircle size={18} />}
+            title="4. Değerlendirme"
+            time="5 Dk"
+          />
+          
+          <div className="mt-8 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+            <h3 className="font-bold text-indigo-800 text-sm mb-2 flex items-center gap-2">
+              <BookOpen size={16} /> Öğretmen Notu
+            </h3>
+            <p className="text-xs text-indigo-700 leading-relaxed">
+              Dokümandaki "İlişkilendirme" ve "Alıştırma" bölümleri zaman yönetimi için "Grup Senaryosu" altında birleştirilmiştir. Ek 2.1.2 bu bölümde kaynak olarak kullanılabilir.
+            </p>
+          </div>
+        </nav>
+
+        {/* Dynamic Content Area */}
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] relative">
+            
+            {/* 1. GİRİŞ */}
+            {activeTab === 'intro' && (
+              <div className="p-8 animate-fadeIn">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold border border-yellow-200">GİRİŞ</span>
+                  <h2 className="text-2xl font-bold text-gray-800">Isınma & Beyin Fırtınası</h2>
+                </div>
+                
+                <div className="prose prose-slate max-w-none text-gray-600 mb-8">
+                  <p className="text-lg">
+                    Öğrencilere bugünün konusunun <strong>"Zor zamanlarda bize rehberlik eden pusulalarımız"</strong> olduğunu açıklayın. Tahtaya "OLUMLU DEĞERLER" yazın ve akıllarına gelenleri sorun.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-6">
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Örnek Değerler Havuzu</h3>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {valuesList.map((val, idx) => (
+                      <span key={idx} className={`px-4 py-2 rounded-lg text-lg font-medium border ${val.color} shadow-sm transform hover:scale-105 transition-transform cursor-default`}>
+                        {val.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-100">
+                  <HelpCircle className="w-6 h-6 flex-shrink-0 mt-1" />
+                  <div>
+                    <h4 className="font-bold">Tartışma Sorusu:</h4>
+                    <p>"Değerler davranışlarımızı nasıl etkiler? Bir örnek verebilir misiniz?"</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. BİREYSEL */}
+            {activeTab === 'individual' && (
+              <div className="p-8 animate-fadeIn">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold border border-purple-200">BİREYSEL</span>
+                  <h2 className="text-2xl font-bold text-gray-800">Benim Değerlerim (Ek 2.1.1)</h2>
+                </div>
+
+                <p className="mb-6 text-gray-600 text-lg">Öğrencilere <strong>Keşfetme Eki 2.1.1</strong>'i dağıtın veya aşağıdaki soruları yansıtın.</p>
+
+                <div className="space-y-6">
+                  <QuestionCard 
+                    number="1" 
+                    text="Sizin için vazgeçilmez olan en önemli 3 değer nedir?"
+                    subtext="Örn: Dürüstlük, Aileye Bağlılık, Öz Disiplin..."
+                  />
+                  <QuestionCard 
+                    number="2" 
+                    text="Bu değerleri kullandığınız bir durumu hatırlıyor musunuz?"
+                    subtext="Kısa bir not alın."
+                  />
+                  <QuestionCard 
+                    number="3" 
+                    text="Seçtiğiniz her olumlu değerin zıttı (olumsuz hali) sizce nedir?"
+                    subtext="Örn: Cesaret <-> Korkaklık / Dürüstlük <-> Yalancılık"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 3. GRUP */}
+            {activeTab === 'group' && (
+              <div className="p-8 animate-fadeIn relative">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold border border-indigo-200">GRUP ÇALIŞMASI</span>
+                    <h2 className="text-2xl font-bold text-gray-800">Karar Verme Alıştırması</h2>
+                  </div>
+                  
+                  {/* EK 2.1.2 Button */}
+                  <button 
+                    onClick={() => setShowEk212(!showEk212)}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium"
+                  >
+                    <Table size={18} />
+                    {showEk212 ? 'Tabloyu Gizle' : 'Yardımcı Kaynak: Ek 2.1.2'}
+                  </button>
+                </div>
+
+                {/* EK 2.1.2 MODAL / OVERLAY */}
+                {showEk212 && (
+                  <div className="mb-8 bg-white border-2 border-indigo-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-4">
+                    <div className="bg-indigo-50 p-3 border-b border-indigo-100 flex justify-between items-center">
+                      <h3 className="font-bold text-indigo-900 flex items-center gap-2">
+                        <BookOpen size={18}/> Ek 2.1.2: Karar Verirken Olumlu Değerleri Kullanmak
+                      </h3>
+                      <button onClick={() => setShowEk212(false)}><X size={20} className="text-indigo-400 hover:text-indigo-700"/></button>
+                    </div>
+                    <div className="p-4 overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-600">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 w-1/3">Olumlu Değer</th>
+                            <th className="px-4 py-2">Tanım</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ek212Data.map((item, idx) => (
+                            <tr key={idx} className="bg-white border-b hover:bg-gray-50">
+                              <td className="px-4 py-2 font-bold text-indigo-700">{item.value}</td>
+                              <td className="px-4 py-2">{item.desc}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <p className="mt-2 text-xs text-gray-400 italic">Not: Bu tanımları aşağıdaki vakayı çözerken rehber olarak kullanın.</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-orange-50 p-6 rounded-xl border border-orange-200 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-orange-200 rounded-full opacity-50"></div>
+                    <h3 className="font-bold text-orange-900 text-xl mb-4">Vaka Analizi (Dokümandan)</h3>
+                    <p className="text-orange-900/80 italic leading-relaxed text-lg">
+                      "Çok yakın bir arkadaşınız, ailesiyle programı olduğu için ödevini yapamamış. Sınıfa girmeden hemen önce, sizin ödevinizin aynısını kopyalamak istiyor. Arkadaşınıza yardım etmek istiyorsunuz ama öğretmene karşı dürüst olmamak sizi rahatsız ediyor."
+                    </p>
+                    <div className="mt-4 pt-4 border-t border-orange-200/60">
+                      <p className="font-bold text-orange-800 mb-1">Tartışma Sorusu:</p>
+                      <p className="text-orange-900">Yukarıdaki <span className="font-bold">Ek 2.1.2</span> tablosundaki tanımları kullanarak; hem 'Dürüst' hem de 'Saygılı' bir çözümü nasıl üretirsiniz?</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                      <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Users size={18} className="text-indigo-600"/> Görevler
+                      </h4>
+                      <ul className="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Sınıfı 4 gruba ayırın.</li>
+                        <li><strong>Adım 1:</strong> Ek 2.1.2'den ilgili değerleri seçin.</li>
+                        <li><strong>Adım 2:</strong> Çatışan değerleri belirleyin (Örn: Dürüstlük vs Arkadaşlık).</li>
+                        <li><strong>Adım 3:</strong> Çözümü bir skeç ile canlandırın.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => changeTab('group', 300)} 
+                  className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 transition-colors font-medium"
+                >
+                  Sunum Süresine Geç (Son 5 Dk)
+                </button>
+              </div>
+            )}
+
+            {/* 4. KAPANIŞ */}
+            {activeTab === 'wrapup' && (
+              <div className="p-8 animate-fadeIn">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold border border-green-200">DEĞERLENDİRME</span>
+                  <h2 className="text-2xl font-bold text-gray-800">Yansıma (Ek 2.1.3)</h2>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="bg-green-50 p-6 rounded-2xl border border-green-100 text-center">
+                    <h3 className="text-xl font-bold text-green-900 mb-4">Sınıfça Tartışalım</h3>
+                    <div className="grid md:grid-cols-2 gap-4 text-left">
+                      <div className="bg-white p-4 rounded-lg shadow-sm border border-green-100">
+                        <span className="block text-4xl mb-2">🤔</span>
+                        <p className="font-medium text-gray-700">Karar vermek için sıklıkla kullandığınız iki olumlu değer nedir?</p>
+                      </div>
+                      <div className="bg-white p-4 rounded-lg shadow-sm border border-green-100">
+                        <span className="block text-4xl mb-2">😌</span>
+                        <p className="font-medium text-gray-700">Değerlerinizi kullandığınızda kendinizi nasıl hissettiniz?</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center max-w-2xl mx-auto mt-12">
+                    <h4 className="text-indigo-900 font-bold text-lg mb-2">Ev Ödevi / Uygulama</h4>
+                    <p className="text-gray-600">
+                      Gelecek birkaç gün boyunca karşılaştığınız zor bir durumu ve hangi değeri kullandığınızı not alın.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          <div className="mt-6 flex justify-between items-center text-sm text-gray-500">
+             <span>Ders Materyali: Kendini Tanıma 2.1</span>
+             <div className="flex gap-4">
+                <span className="flex items-center gap-1 text-green-600"><CheckCircle size={14}/> Ek 2.1.1</span>
+                <span className="flex items-center gap-1 text-green-600"><CheckCircle size={14}/> Ek 2.1.2</span>
+                <span className="flex items-center gap-1 text-green-600"><CheckCircle size={14}/> Ek 2.1.3</span>
+             </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// Helper Components
+
+const MenuButton = ({ active, onClick, icon, title, time }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 ${
+      active 
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-105' 
+        : 'bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'
+    }`}
+  >
+    <div className="flex items-center gap-3">
+      {icon}
+      <span className="font-medium">{title}</span>
+    </div>
+    <span className={`text-xs px-2 py-1 rounded-full ${active ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+      {time}
+    </span>
+  </button>
+);
+
+const QuestionCard = ({ number, text, subtext }) => (
+  <div className="flex gap-4 items-start bg-white p-4 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold">
+      {number}
+    </div>
+    <div>
+      <p className="text-lg font-medium text-gray-800">{text}</p>
+      {subtext && <p className="text-gray-500 text-sm mt-1">{subtext}</p>}
+    </div>
+  </div>
+);
+
+export default LessonPlanApp;
